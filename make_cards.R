@@ -25,6 +25,6 @@ make_card <- function(a, bgcolour, fontcolor) {
   ggsave(glue('card_{a}.png'), width = 64, height = 100, units = 'mm')
 }
 
-make_card('4\u25a0', 'yellow', 'black')
+make_card('10\u25a0', 'red', 'white')
 
 walk(letters, make_card)
