@@ -3,23 +3,28 @@ library(tibble)
 library(dplyr)
 library(purrr)
 library(glue)
-make_card <- function(a, bgcolour) {
+
+make_card <- function(a, bgcolour, fontcolor) {
   layout <- tibble(x = c(0,0,1,1,0.5), 
-                   y = c(0,1,0,1,0.5), 
-                   text = c(a, 'Baba', 'Coco', 'D', 'my text'),
-                   fontsize = c(10,6,7,8,10),
+                   y = c(0,0.95,0,1,0.5), 
+                   text = c('', a, '', '', a),
+                   fontsize = c(1,6,1,1,20),
                    just = c('left', 'left', 'right', 'right', 'center'), 
-                   colour = c('red', 'blue', 'red', 'blue', 'green'))
+                   colour = as.factor(c(1, 2, 3, 4, 5)))
   
   card <- layout %>%
     ggplot(aes(x = x, y = y)) +
-    geom_text(aes(label = text, size = fontsize, hjust = just, colour = colour)) +
+    geom_text(aes(label = text, size = fontsize, hjust = just, colour = colour),
+              alpha = 1) +
     guides(size = F, colour = F) +
-    scale_size(range=c(5,10)) +
+    scale_size(range=c(1,20)) +
+    scale_colour_manual(values=c('black', fontcolor, 'red', 'blue', fontcolor)) +
     theme_void() +
-    theme(plot.background = element_rect(fill = bgcolour, colour = 'red'))
+    theme(plot.background = element_rect(fill = bgcolour))
   
-  ggsave(glue('card_{a}.png'), width = 60, height = 100, units = "mm")
+  ggsave(glue('card_{a}.png'), width = 64, height = 100, units = 'mm')
 }
+
+make_card('4\u25a0', 'yellow', 'black')
 
 walk(letters, make_card)
