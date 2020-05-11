@@ -1,4 +1,9 @@
 label,image
+0_blue,https://raw.githubusercontent.com/mcgriffiths/cardgames/master/voodoo/card_0_blue.png
+0_red,https://raw.githubusercontent.com/mcgriffiths/cardgames/master/voodoo/card_0_red.png
+0_green,https://raw.githubusercontent.com/mcgriffiths/cardgames/master/voodoo/card_0_green.png
+0_yellow,https://raw.githubusercontent.com/mcgriffiths/cardgames/master/voodoo/card_0_yellow.png
+0_black,https://raw.githubusercontent.com/mcgriffiths/cardgames/master/voodoo/card_0_black.png
 1_blue,https://raw.githubusercontent.com/mcgriffiths/cardgames/master/voodoo/card_1_blue.png
 1_red,https://raw.githubusercontent.com/mcgriffiths/cardgames/master/voodoo/card_1_red.png
 1_green,https://raw.githubusercontent.com/mcgriffiths/cardgames/master/voodoo/card_1_green.png
