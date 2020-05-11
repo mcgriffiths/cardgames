@@ -22,9 +22,9 @@ make_card <- function(a, bgcolour, fontcolor) {
     theme_void() +
     theme(plot.background = element_rect(fill = bgcolour))
   
-  ggsave(glue('card_{a}.png'), width = 64, height = 100, units = 'mm')
+  ggsave(glue('card_{a}.svg'), width = 64, height = 100, units = 'mm')
 }
 
-make_card('10\u25a0', 'red', 'white')
+make_card('9', 'blue', 'white')
 
 walk(letters, make_card)
