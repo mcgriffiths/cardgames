@@ -3,12 +3,13 @@ library(tibble)
 library(dplyr)
 library(purrr)
 library(glue)
+library(tidyr)
 
 make_card <- function(a, bgcolour, fontcolor) {
   layout <- tibble(x = c(0,0,1,1,0.5), 
                    y = c(0,0.95,0,1,0.5), 
                    text = c('', a, '', '', a),
-                   fontsize = c(1,6,1,1,20),
+                   fontsize = c(1,3,1,1,20),
                    just = c('left', 'left', 'right', 'right', 'center'), 
                    colour = as.factor(c(1, 2, 3, 4, 5)))
   
@@ -22,9 +23,14 @@ make_card <- function(a, bgcolour, fontcolor) {
     theme_void() +
     theme(plot.background = element_rect(fill = bgcolour))
   
-  ggsave(glue('card_{a}.svg'), width = 64, height = 100, units = 'mm')
+  ggsave(glue('card_{a}_{bgcolour}.png'), width = 1.03, height = 1.60, units = 'in', dpi = 100)
 }
 
 make_card('9', 'blue', 'white')
 
-walk(letters, make_card)
+card_list <- expand_grid(rank = 1:15, suit = c('blue', 'red', 'green', 'yellow', 'black'))
+
+card_list <- card_list %>%
+  mutate(textcol = ifelse(suit %in% c('yellow', 'green'), 'black', 'white'))
+
+pwalk(list(card_list$rank, card_list$suit), make_card)
