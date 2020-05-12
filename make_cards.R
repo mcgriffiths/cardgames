@@ -6,44 +6,41 @@ library(glue)
 library(tidyr)
 library(readr)
 
-make_card <- function(a, bgcolour, fontcolor) {
+make_card <- function(rank, suit, ...) {
   
   icon <- case_when(
     
-    a == "0" ~ " *",
-    a %in% c("5", "7") ~ "x2",
+    rank == "0" ~ " *",
+    rank %in% c("5", "7") ~ "x2",
     TRUE ~ ""
     
   )
   
-  layout <- tibble(x = c(0,0.15,1,1,0.5), 
-                   y = c(0.05,0.95,0,1,0.5), 
-                   text = c(icon, a, '', '', a),
-                   fontsize = c(3,3,1,1,20),
-                   just = c('left', 'center', 'right', 'right', 'center'), 
-                   colour = as.factor(c(1, 2, 3, 4, 5)))
+  textcol <- ifelse(suit %in% c('yellow', 'green'), 'black', 'white')
+  
+  layout <- tibble(x = c(0,0.15,0.5,1,1), 
+                   y = c(0.05,0.95,0.5,1,0), 
+                   text = c(icon, rank, rank,"",""),
+                   fontsize = c(3,3,20,1,1),
+                   just = c('left', 'center', 'center','right','right'))
   
   card <- layout %>%
     ggplot(aes(x = x, y = y)) +
-    geom_text(aes(label = text, size = fontsize, hjust = just, colour = colour),
-              alpha = 1) +
+    geom_text(aes(label = text, size = fontsize, hjust = just), colour = textcol) +
     guides(size = F, colour = F) +
     scale_size(range=c(1,20)) +
-    scale_colour_manual(values=c(fontcolor, fontcolor, 'red', 'blue', fontcolor)) +
+    scale_colour_manual(values=c(textcol)) +
     theme_void() +
-    theme(plot.background = element_rect(fill = bgcolour, colour = bgcolour))
+    theme(plot.background = element_rect(fill = suit, colour = suit))
   
-  ggsave(glue('voodoo/card_{a}_{bgcolour}.png'), width = 1.03, height = 1.60, units = 'in', dpi = 100)
+  ggsave(glue('voodoo/card_{rank}_{suit}.png'), width = 1.03, height = 1.60, units = 'in', dpi = 100)
 }
 
 make_card('11', 'blue', 'white')
 
 card_list <- expand_grid(rank = 0:15, suit = c('blue', 'red', 'green', 'yellow', 'black'))
 
-card_list <- card_list %>%
-  mutate(textcol = ifelse(suit %in% c('yellow', 'green'), 'black', 'white'))
-
-pwalk(list(card_list$rank, card_list$suit, card_list$textcol), make_card)
+pwalk(card_list, make_card)
 
 card_list %>%
   transmute(label = glue('{rank}_{suit}'), 
