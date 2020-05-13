@@ -33,9 +33,9 @@ make_card <- function(rank, suit, ...) {
     scale_size(range=c(1,20)) +
     scale_colour_manual(values=c(textcol)) +
     theme_void() +
-    theme(plot.background = element_rect(fill = suit, colour = 'white'))
+    theme(plot.background = element_rect(fill = suit, colour = suit))
   
-  ggsave(glue('crew/task_{rank}_{suit}.png'), width = 1.03, height = 1.60, units = 'in', dpi = 100)
+  ggsave(glue('crew/task_{rank}_{suit}.png'), width = 0.52, height = 0.8, units = 'in', dpi = 100)
 }
 
 make_card('11', 'blue', 'white')
@@ -48,9 +48,9 @@ crew_card_list <- bind_rows(crew_card_list, expand_grid(rank = 1:4, suit = 'blac
 
 pwalk(crew_card_list, make_card)
 
-card_list %>%
+crew_card_list %>%
   transmute(label = glue('{rank}_{suit}'), 
-         image = glue('https://raw.githubusercontent.com/mcgriffiths/cardgames/master/voodoo/card_{rank}_{suit}.png')) %>%
-  write_csv('voodoo_cards.csv')
+         image = glue('https://raw.githubusercontent.com/mcgriffiths/cardgames/master/crew/task_{rank}_{suit}.png')) %>%
+  write_csv('crew_tasks.csv')
 
 
