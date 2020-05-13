@@ -8,19 +8,21 @@ library(readr)
 
 make_card <- function(rank, suit, ...) {
   
-  icon <- case_when(
-    
-    rank == "0" ~ " *",
-    rank %in% c("5", "7") ~ "x2",
-    TRUE ~ ""
-    
-  )
+  # icon <- case_when(
+  #   
+  #   rank == "0" ~ " *",
+  #   rank %in% c("5", "7") ~ "x2",
+  #   TRUE ~ ""
+  #   
+  # )
+  
+  icon <- ""
   
   textcol <- ifelse(suit %in% c('yellow', 'green'), 'black', 'white')
   
   layout <- tibble(x = c(0,0.15,0.5,1,1), 
                    y = c(0.05,0.95,0.5,1,0), 
-                   text = c(icon, rank, rank,"",""),
+                   text = c(icon, "", rank,"",""),
                    fontsize = c(3,3,20,1,1),
                    just = c('left', 'center', 'center','right','right'))
   
@@ -31,16 +33,20 @@ make_card <- function(rank, suit, ...) {
     scale_size(range=c(1,20)) +
     scale_colour_manual(values=c(textcol)) +
     theme_void() +
-    theme(plot.background = element_rect(fill = suit, colour = suit))
+    theme(plot.background = element_rect(fill = suit, colour = 'white'))
   
-  ggsave(glue('voodoo/card_{rank}_{suit}.png'), width = 1.03, height = 1.60, units = 'in', dpi = 100)
+  ggsave(glue('crew/task_{rank}_{suit}.png'), width = 1.03, height = 1.60, units = 'in', dpi = 100)
 }
 
 make_card('11', 'blue', 'white')
 
-card_list <- expand_grid(rank = 0:15, suit = c('blue', 'red', 'green', 'yellow', 'black'))
+voodoo_card_list <- expand_grid(rank = 0:15, suit = c('blue', 'red', 'green', 'yellow', 'black'))
 
-pwalk(card_list, make_card)
+crew_card_list <- expand_grid(rank = 1:9, suit = c('blue', 'red', 'green', 'yellow')) 
+
+crew_card_list <- bind_rows(crew_card_list, expand_grid(rank = 1:4, suit = 'black'))
+
+pwalk(crew_card_list, make_card)
 
 card_list %>%
   transmute(label = glue('{rank}_{suit}'), 
