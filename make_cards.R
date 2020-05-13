@@ -7,24 +7,20 @@ library(tidyr)
 library(readr)
 
 make_card <- function(rank, suit, ...) {
-  
-  # icon <- case_when(
-  #   
-  #   rank == "0" ~ " *",
-  #   rank %in% c("5", "7") ~ "x2",
-  #   TRUE ~ ""
-  #   
-  # )
-  
-  icon <- ""
+
+  icon <- case_when(
+   rank == "0" ~ " *",
+   rank %in% c("5", "7") ~ "x2",
+   TRUE ~ ""
+  )
   
   textcol <- ifelse(suit %in% c('yellow', 'green'), 'black', 'white')
   
-  layout <- tibble(x = c(0,0.15,0.5), 
+  layout <- tibble(x = c(0.15,0.15,0.5), 
                    y = c(0.05,0.95,0.5), 
                    text = c(icon, rank, rank),
                    fontsize = c(3,3,20),
-                   just = c('left', 'center', 'center'))
+                   just = c('center', 'center', 'center'))
   
   card <- layout %>%
     ggplot(aes(x = x, y = y)) +
@@ -41,19 +37,11 @@ make_card <- function(rank, suit, ...) {
 }
 
 
-make_card('2', 'blue')
+make_card('5', 'black')
 
 
 make_token <- function(rank, suit, label,...) {
-  
-  # icon <- case_when(
-  #   
-  #   rank == "0" ~ " *",
-  #   rank %in% c("5", "7") ~ "x2",
-  #   TRUE ~ ""
-  #   
-  # )
-  
+
   icon <- ""
   
   textcol <- ifelse(suit %in% c('yellow', 'green'), 'black', 'white')
