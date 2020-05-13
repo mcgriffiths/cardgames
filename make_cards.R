@@ -6,7 +6,7 @@ library(glue)
 library(tidyr)
 library(readr)
 
-make_card <- function(rank, suit, ...) {
+make_card <- function(rank, suit, label, ...) {
   
   # icon <- case_when(
   #   
@@ -20,11 +20,11 @@ make_card <- function(rank, suit, ...) {
   
   textcol <- ifelse(suit %in% c('yellow', 'green'), 'black', 'white')
   
-  layout <- tibble(x = c(0,0.15,0.5,1,1), 
+  layout <- tibble(x = c(0,0.05,0.5,1,1), 
                    y = c(0.05,0.95,0.5,1,0), 
-                   text = c(icon, "", rank,"",""),
+                   text = c(icon, rank, "","",""),
                    fontsize = c(3,3,20,1,1),
-                   just = c('left', 'center', 'center','right','right'))
+                   just = c('left', 'left', 'center','right','right'))
   
   card <- layout %>%
     ggplot(aes(x = x, y = y)) +
@@ -35,7 +35,7 @@ make_card <- function(rank, suit, ...) {
     theme_void() +
     theme(plot.background = element_rect(fill = suit, colour = suit))
   
-  ggsave(glue('crew/task_{rank}_{suit}.png'), width = 0.52, height = 0.8, units = 'in', dpi = 100)
+  ggsave(glue('crew/token_{label}.png'), width = 1.03, height = 1.6, units = 'in', dpi = 100)
 }
 
 make_card('11', 'blue', 'white')
@@ -46,7 +46,11 @@ crew_card_list <- expand_grid(rank = 1:9, suit = c('blue', 'red', 'green', 'yell
 
 crew_card_list <- bind_rows(crew_card_list, expand_grid(rank = 1:4, suit = 'black'))
 
-pwalk(crew_card_list, make_card)
+crew_token_list <- tibble(rank = c(1:5, ">", ">>", ">>>", ">>>>", "\u2126"), 
+                          suit = 'black',
+                          label = c(1:5, "a", "b", "c", "d", "e"))
+
+pwalk(crew_token_list, make_card)
 
 crew_card_list %>%
   transmute(label = glue('{rank}_{suit}'), 
