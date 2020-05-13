@@ -20,23 +20,29 @@ make_card <- function(rank, suit, ...) {
   
   textcol <- ifelse(suit %in% c('yellow', 'green'), 'black', 'white')
   
-  layout <- tibble(x = c(0,0.15,0.5,1,1), 
-                   y = c(0.05,0.95,0.5,1,0), 
-                   text = c(icon, rank, rank,"",""),
-                   fontsize = c(3,3,20,1,1),
-                   just = c('left', 'center', 'center','right','right'))
+  layout <- tibble(x = c(0,0.15,0.5), 
+                   y = c(0.05,0.95,0.5), 
+                   text = c(icon, rank, rank),
+                   fontsize = c(3,3,20),
+                   just = c('left', 'center', 'center'))
   
   card <- layout %>%
     ggplot(aes(x = x, y = y)) +
     geom_text(aes(label = text, size = fontsize, hjust = just), colour = textcol) +
     guides(size = F, colour = F) +
-    scale_size(range=c(1,20)) +
+    scale_size_area(max_size = 20) +
     scale_colour_manual(values=c(textcol)) +
+    scale_x_continuous(limits = c(0,1)) +
+    scale_y_continuous(limits = c(0,1)) +
     theme_void() +
     theme(plot.background = element_rect(fill = suit, colour = suit))
   
-  ggsave(glue('crew/card_{rank}_{suit}.png'), width = 1.03, height = 1.6, units = 'in', dpi = 100)
+  ggsave(glue('card_{rank}_{suit}.png'), width = 1.03, height = 1.6, units = 'in', dpi = 100)
 }
+
+
+make_card('2', 'blue')
+
 
 make_token <- function(rank, suit, label,...) {
   
@@ -70,7 +76,7 @@ make_token <- function(rank, suit, label,...) {
   ggsave(glue('crew/token_{label}.png'), width = 1.03, height = 0.5, units = 'in', dpi = 100)
 }
 
-make_card('9', 'blue')
+
 
 voodoo_card_list <- expand_grid(rank = 0:15, suit = c('blue', 'red', 'green', 'yellow', 'black'))
 
