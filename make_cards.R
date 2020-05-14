@@ -6,12 +6,68 @@ library(glue)
 library(tidyr)
 library(readr)
 
+
+voodoo_template <- function(rank, suit) {
+  
+  icon <- case_when(
+    rank == "0" ~ "*",
+    rank %in% c("5", "7") ~ "x2",
+    TRUE ~ ""
+  )
+  
+  text_col <- as.numeric(suit %in% c('yellow', 'green'))
+  
+  tribble(
+    ~x, ~y, ~text, ~text_col, ~text_size, ~just,
+    0.15, 0.05, icon, text_col, 3, 'center',
+    0.15, 0.95, rank, text_col, 3, 'center',
+    0.5, 0.5, rank, text_col, 20, 'center'
+  )
+
+}
+
+generic_template <- function(rank, suit) {
+  
+  icon <- ''
+  
+  text_col <- as.numeric(suit %in% c('yellow', 'green', 'orange', 'white'))
+  
+  tribble(
+    ~x, ~y, ~text, ~text_col, ~text_size, ~just,
+    0.15, 0.05, icon, text_col, 3, 'center',
+    0.15, 0.95, rank, text_col, 3, 'center',
+    0.5, 0.5, rank, text_col, 20, 'center'
+  )
+  
+}
+
+
+
+make_card <- function(rank, suit, template, card_width = 1.03, card_height = 1.6, ...) {
+  
+  template(rank, suit) %>%
+    ggplot(aes(x = x, y = y)) +
+    geom_text(aes(label = text, size = text_size, hjust = just, colour = as.factor(text_col))) +
+    guides(size = F, colour = F) +
+    scale_size_area(max_size = 20) +
+    scale_colour_manual(values = c('0' = 'white', '1' = 'black')) +
+    scale_x_continuous(limits = c(0,1)) +
+    scale_y_continuous(limits = c(0,1)) +
+    theme_void() +
+    theme(plot.background = element_rect(fill = suit, colour = suit))
+  
+  ggsave(glue('generic/card_{rank}_{suit}.png'), width = card_width, height = card_height, units = 'in', dpi = 100)
+  
+  
+}
+
+#obsolete
 make_card <- function(rank, suit, ...) {
 
   icon <- case_when(
-   rank == "0" ~ " *",
-   rank %in% c("5", "7") ~ "x2",
-   TRUE ~ ""
+    rank == "0" ~ " *",
+    rank %in% c("5", "7") ~ "x2",
+    TRUE ~ ""
   )
   
   textcol <- ifelse(suit %in% c('yellow', 'green'), 'black', 'white')
@@ -35,9 +91,6 @@ make_card <- function(rank, suit, ...) {
   
   ggsave(glue('card_{rank}_{suit}.png'), width = 1.03, height = 1.6, units = 'in', dpi = 100)
 }
-
-
-make_card('5', 'black')
 
 
 make_token <- function(rank, suit, label,...) {
@@ -76,12 +129,17 @@ crew_token_list <- tibble(rank = c(1:5, ">", ">>", ">>>", ">>>>", "\u2126"),
                           suit = 'black',
                           label = c(1:5, "a", "b", "c", "d", "e"))
 
-pwalk(crew_token_list, make_token)
 
-crew_card_list %>%
+generic_card_list <- expand_grid(rank = c(as.character(0:20), ''), 
+                                 suit = c('blue', 'red', 'green', 'yellow', 'black', 'orange', 'purple', 'white'))
+
+
+pwalk(generic_card_list, make_card, template = generic_template)
+
+generic_card_list %>%
   transmute(label = glue('{rank}_{suit}'), 
-         image = glue('https://raw.githubusercontent.com/mcgriffiths/cardgames/master/crew/task_{rank}_{suit}.png')) %>%
-  write_csv('crew_tasks.csv')
+         image = glue('https://raw.githubusercontent.com/mcgriffiths/cardgames/master/generic/card_{rank}_{suit}.png')) %>%
+  write_csv('generic_cards.csv')
 
 crew_token_list %>%
   transmute(label = glue('token_{label}'), 
