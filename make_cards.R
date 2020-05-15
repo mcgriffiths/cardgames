@@ -30,33 +30,50 @@ generic_template <- function(rank, suit) {
   
   icon <- ''
   
-  text_col <- as.numeric(suit %in% c('yellow', 'green', 'orange', 'white'))
+  tribble(
+    ~x, ~y, ~text, ~text_size, ~just,
+    0.15, 0.05, icon, 3, 'center',
+    0.15, 0.95, rank, 3, 'center',
+    0.5, 0.5, rank, 20, 'center'
+  )
+  
+}
+
+texas_template <- function(rank, suit) {
+  
+  icon <- 10*(suit-1) + 12 - suit
+  icon <- if_else(suit == 1, icon - 1, icon)
   
   tribble(
-    ~x, ~y, ~text, ~text_col, ~text_size, ~just,
-    0.15, 0.05, icon, text_col, 3, 'center',
-    0.15, 0.95, rank, text_col, 3, 'center',
-    0.5, 0.5, rank, text_col, 20, 'center'
+    ~x, ~y, ~text, ~text_size, ~just,
+    0.15, 0.05, icon, 1, 'center',
+    0.15, 0.95, rank, 3, 'center',
+    0.5, 0.5, rank, 20, 'center'
   )
   
 }
 
 
 
-make_card <- function(rank, suit, template, card_width = 1.03, card_height = 1.6, ...) {
+make_card <- function(rank, suit, template, dir, card_width = 1.03, card_height = 1.6, ...) {
+  
+  fill_cols <- c('black', 'red', 'orange', 'yellow', 'green', 'blue', 'purple', 'white')
+  names(fill_cols) <- 1:8
+  
+  text_col <- if_else(fill_cols[suit] %in% c('black', 'red', 'blue', 'purple'), 'white', 'black')  
   
   template(rank, suit) %>%
     ggplot(aes(x = x, y = y)) +
-    geom_text(aes(label = text, size = text_size, hjust = just, colour = as.factor(text_col))) +
+    geom_text(aes(label = text, size = text_size, hjust = just), colour = text_col) +
     guides(size = F, colour = F) +
     scale_size_area(max_size = 20) +
     scale_colour_manual(values = c('0' = 'white', '1' = 'black')) +
     scale_x_continuous(limits = c(0,1)) +
     scale_y_continuous(limits = c(0,1)) +
     theme_void() +
-    theme(plot.background = element_rect(fill = suit, colour = suit))
+    theme(plot.background = element_rect(fill = fill_cols[suit], colour = fill_cols[suit]))
   
-  ggsave(glue('generic/card_{rank}_{suit}.png'), width = card_width, height = card_height, units = 'in', dpi = 100)
+  ggsave(glue('{dir}/card_{rank}_{suit}.png'), width = card_width, height = card_height, units = 'in', dpi = 100)
   
   
 }
@@ -130,8 +147,7 @@ crew_token_list <- tibble(rank = c(1:5, ">", ">>", ">>>", ">>>>", "\u2126"),
                           label = c(1:5, "a", "b", "c", "d", "e"))
 
 
-generic_card_list <- expand_grid(rank = c(as.character(0:20), ''), 
-                                 suit = c('blue', 'red', 'green', 'yellow', 'black', 'orange', 'purple', 'white'))
+generic_card_list <- expand_grid(rank = c(as.character(0:20), ''), suit = 1:8)
 
 
 pwalk(generic_card_list, make_card, template = generic_template)
@@ -146,3 +162,17 @@ crew_token_list %>%
             image = glue('https://raw.githubusercontent.com/mcgriffiths/cardgames/master/crew/{label}.png')) %>%
   write_csv('crew_tokens.csv')
 
+
+yokai_card_list <- expand_grid(rank = 1:7, suit = 1:7) %>% mutate(rank = rank + suit -1)
+
+
+
+texas_card_list <- expand_grid(rank = 1:11, suit = 1:8) %>% 
+  filter(rank <= (12-suit)) %>%
+  mutate(rank = ifelse(suit == 1, rank - 1, rank), 
+         rank = 10*(suit-1)+rank) 
+
+texas_card_list %>%
+  transmute(label = glue('{rank}_{suit}'), 
+            image = glue('https://raw.githubusercontent.com/mcgriffiths/cardgames/master/texas/card_{rank}_{suit}.png')) %>%
+  write_csv('texas_cards.csv')
