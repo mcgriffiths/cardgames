@@ -55,7 +55,7 @@ texas_template <- function(rank, suit) {
 
 
 
-make_card <- function(rank, suit, template, dir, card_width = 1.03, card_height = 1.6, ...) {
+make_card <- function(rank, suit, template, dir, filetype = 'png', card_width = 1.03, card_height = 1.6, ...) {
   
   fill_cols <- c('black', 'red', 'orange', 'yellow', 'green', 'blue', 'purple', 'white')
   names(fill_cols) <- 1:8
@@ -73,7 +73,7 @@ make_card <- function(rank, suit, template, dir, card_width = 1.03, card_height 
     theme_void() +
     theme(plot.background = element_rect(fill = fill_cols[suit], colour = fill_cols[suit]))
   
-  ggsave(glue('{dir}/card_{rank}_{suit}.svg'), width = card_width, height = card_height, units = 'in', dpi = 100)
+  ggsave(glue('{dir}/card_{rank}_{suit}.{filetype}'), width = card_width, height = card_height, units = 'in', dpi = 100)
   
   
 }
