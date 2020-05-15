@@ -73,7 +73,7 @@ make_card <- function(rank, suit, template, dir, card_width = 1.03, card_height 
     theme_void() +
     theme(plot.background = element_rect(fill = fill_cols[suit], colour = fill_cols[suit]))
   
-  ggsave(glue('{dir}/card_{rank}_{suit}.png'), width = card_width, height = card_height, units = 'in', dpi = 100)
+  ggsave(glue('{dir}/card_{rank}_{suit}.svg'), width = card_width, height = card_height, units = 'in', dpi = 100)
   
   
 }
@@ -150,12 +150,12 @@ crew_token_list <- tibble(rank = c(1:5, ">", ">>", ">>>", ">>>>", "\u2126"),
 generic_card_list <- expand_grid(rank = c(as.character(0:20), ''), suit = 1:8)
 
 
-pwalk(generic_card_list, make_card, template = generic_template)
+pwalk(generic_card_list, make_card, template = generic_template, dir = 'generic_svg')
 
 generic_card_list %>%
   transmute(label = glue('{rank}_{suit}'), 
-         image = glue('https://raw.githubusercontent.com/mcgriffiths/cardgames/master/generic/card_{rank}_{suit}.png')) %>%
-  write_csv('generic_cards.csv')
+         image = glue('https://raw.githubusercontent.com/mcgriffiths/cardgames/master/generic_svg/card_{rank}_{suit}.svg')) %>%
+  write_csv('generic_cards_svg.csv')
 
 crew_token_list %>%
   transmute(label = glue('token_{label}'), 
