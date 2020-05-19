@@ -19,8 +19,8 @@ voodoo_template <- function(rank, suit) {
   
   tribble(
     ~x, ~y, ~text, ~text_col, ~text_size, ~just,
-    0.15, 0.05, icon, text_col, 3, 'center',
-    0.15, 0.95, rank, text_col, 3, 'center',
+    0.15, 0.1, icon, text_col, 2, 'center',
+    0.15, 0.9, rank, text_col, 2, 'center',
     0.5, 0.5, rank, text_col, 20, 'center'
   )
 
@@ -33,7 +33,7 @@ generic_template <- function(rank, suit) {
   tribble(
     ~x, ~y, ~text, ~text_size, ~just,
     0.15, 0.05, icon, 3, 'center',
-    0.15, 0.95, rank, 3, 'center',
+    0.15, 0.9, rank, 3, 'center',
     0.5, 0.5, rank, 20, 'center'
   )
   
@@ -64,14 +64,16 @@ make_card <- function(rank, suit, template, dir, filetype = 'png', card_width = 
   
   template(rank, suit) %>%
     ggplot(aes(x = x, y = y)) +
+    geom_rect(xmin = 0, xmax = 1, ymin = 0, ymax = 1, fill = fill_cols[suit]) +
     geom_text(aes(label = text, size = text_size, hjust = just), colour = text_col) +
     guides(size = F, colour = F) +
     scale_size_area(max_size = 20) +
     scale_colour_manual(values = c('0' = 'white', '1' = 'black')) +
-    scale_x_continuous(limits = c(0,1)) +
-    scale_y_continuous(limits = c(0,1)) +
-    theme_void() +
-    theme(plot.background = element_rect(fill = fill_cols[suit], colour = fill_cols[suit]))
+    scale_x_continuous(limits = c(0,1), expand = c(0,0)) +
+    scale_y_continuous(limits = c(0,1), expand = c(0,0)) +
+    theme_void() 
+  #+
+   # theme(plot.background = element_rect(fill = fill_cols[suit], colour = fill_cols[suit]))
   
   ggsave(glue('{dir}/card_{rank}_{suit}.{filetype}'), width = card_width, height = card_height, units = 'in', dpi = 100)
   
@@ -114,3 +116,28 @@ texas_card_list %>%
   transmute(label = glue('{rank}_{suit}'), 
             image = glue('https://raw.githubusercontent.com/mcgriffiths/cardgames/master/texas/card_{rank}_{suit}.png')) %>%
   write_csv('texas_cards.csv')
+
+generic_card_list %>%
+  mutate(card = map2(rank, suit, generic_template)) %>%
+  mutate(card_image = make_plot(template))
+  
+
+make_plot <- function(template) {
+  
+  fill_cols <- c('black', 'red', 'orange', 'yellow', 'green', 'blue', 'purple', 'white')
+  names(fill_cols) <- 1:8
+  
+  text_col <- if_else(fill_cols[suit] %in% c('black', 'red', 'blue', 'purple'), 'white', 'black')  
+  
+  template %>%
+    ggplot(aes(x = x, y = y)) +
+    geom_rect(xmin = 0, xmax = 1, ymin = 0, ymax = 1, fill = fill_cols[suit]) +
+    geom_text(aes(label = text, size = text_size, hjust = just), colour = text_col) +
+    guides(size = F, colour = F) +
+    scale_size_area(max_size = 20) +
+    scale_colour_manual(values = c('0' = 'white', '1' = 'black')) +
+    scale_x_continuous(limits = c(0,1), expand = c(0,0)) +
+    scale_y_continuous(limits = c(0,1), expand = c(0,0)) +
+    theme_void() 
+ 
+}
