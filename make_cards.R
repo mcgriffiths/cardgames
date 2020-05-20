@@ -46,8 +46,8 @@ texas_template <- function(rank, suit) {
   
   tribble(
     ~x, ~y, ~text, ~text_size, ~just,
-    0.15, 0.05, icon, 1, 'center',
-    0.15, 0.95, rank, 3, 'center',
+    0.15, 0.1, icon, 1, 'center',
+    0.15, 0.9, rank, 3, 'center',
     0.5, 0.5, rank, 20, 'center'
   )
   
@@ -109,35 +109,41 @@ yokai_card_list <- expand_grid(rank = 1:7, suit = 1:7) %>% mutate(rank = rank + 
 
 texas_card_list <- expand_grid(rank = 1:11, suit = 1:8) %>% 
   filter(rank <= (12-suit)) %>%
-  mutate(rank = ifelse(suit == 1, rank - 1, rank), 
-         rank = 10*(suit-1)+rank) 
+  mutate(rank_adj = ifelse(suit == 1, rank - 1, rank), 
+         rank_adj = 10*(suit-1)+rank) %>%
+  select(rank = rank_adj, suit, rank_orig = rank)
 
 texas_card_list %>%
   transmute(label = glue('{rank}_{suit}'), 
             image = glue('https://raw.githubusercontent.com/mcgriffiths/cardgames/master/texas/card_{rank}_{suit}.png')) %>%
   write_csv('texas_cards.csv')
 
-generic_card_list %>%
-  mutate(card = map2(rank, suit, generic_template)) %>%
-  mutate(card_image = make_plot(template))
-  
+#using facets to produce everything in one image
+generic_card_list <- expand_grid(rank = 1:10, suit = 1:8)
+voodoo_card_list <- expand_grid(rank = 0:15, suit = 1:5)
 
-make_plot <- function(template) {
-  
-  fill_cols <- c('black', 'red', 'orange', 'yellow', 'green', 'blue', 'purple', 'white')
-  names(fill_cols) <- 1:8
-  
-  text_col <- if_else(fill_cols[suit] %in% c('black', 'red', 'blue', 'purple'), 'white', 'black')  
-  
-  template %>%
+generic_cards <- texas_card_list %>%
+  mutate(card = map2(rank, suit, texas_template)) %>%
+  unnest(card)
+
+fill_cols <- c('black', 'red', 'orange', 'yellow', 'green', 'blue', 'purple', 'white')
+names(fill_cols) <- 1:8
+
+generic_cards %>%
+#  filter(rank_orig <= 1, suit <= 1 ) %>%
+  mutate(text_col = factor(if_else(fill_cols[suit] %in% c('black', 'red', 'blue', 'purple'), 0, 1))) %>%
     ggplot(aes(x = x, y = y)) +
-    geom_rect(xmin = 0, xmax = 1, ymin = 0, ymax = 1, fill = fill_cols[suit]) +
-    geom_text(aes(label = text, size = text_size, hjust = just), colour = text_col) +
-    guides(size = F, colour = F) +
-    scale_size_area(max_size = 20) +
+    geom_rect(xmin = 0, xmax = 1, ymin = 0, ymax = 1, color = 'grey', aes(fill = factor(suit))) +
+    geom_text(aes(label = text, size = text_size, hjust = just, colour = text_col)) +
+    facet_grid(rank_orig ~ suit) +
+    guides(size = F, colour = F, fill = F) +
+    scale_size_area(max_size = 15) +
     scale_colour_manual(values = c('0' = 'white', '1' = 'black')) +
+    scale_fill_manual(values = fill_cols) +
     scale_x_continuous(limits = c(0,1), expand = c(0,0)) +
     scale_y_continuous(limits = c(0,1), expand = c(0,0)) +
-    theme_void() 
+    theme_void() +
+    theme(strip.background = element_blank(), strip.text = element_blank(), panel.spacing = unit(0, 'cm'))
  
-}
+ggsave('test_card.png', width = 8*1.03, height = 11*1.6, units = 'in', dpi = 100)
+
