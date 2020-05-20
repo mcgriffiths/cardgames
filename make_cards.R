@@ -32,7 +32,7 @@ generic_template <- function(rank, suit) {
   
   tribble(
     ~x, ~y, ~text, ~text_size, ~just,
-    0.15, 0.05, icon, 3, 'center',
+    0.15, 0.1, icon, 3, 'center',
     0.15, 0.9, rank, 3, 'center',
     0.5, 0.5, rank, 20, 'center'
   )
@@ -72,9 +72,7 @@ make_card <- function(rank, suit, template, dir, filetype = 'png', card_width = 
     scale_x_continuous(limits = c(0,1), expand = c(0,0)) +
     scale_y_continuous(limits = c(0,1), expand = c(0,0)) +
     theme_void() 
-  #+
-   # theme(plot.background = element_rect(fill = fill_cols[suit], colour = fill_cols[suit]))
-  
+
   ggsave(glue('{dir}/card_{rank}_{suit}.{filetype}'), width = card_width, height = card_height, units = 'in', dpi = 100)
   
   
@@ -122,22 +120,22 @@ texas_card_list %>%
 generic_card_list <- expand_grid(rank = 1:10, suit = 1:8)
 voodoo_card_list <- expand_grid(rank = 0:15, suit = 1:5)
 
-generic_cards <- texas_card_list %>%
-  mutate(card = map2(rank, suit, texas_template)) %>%
+generic_cards <- yokai_card_list %>%
+  mutate(card = map2(rank, suit, generic_template)) %>%
   unnest(card)
 
 fill_cols <- c('black', 'red', 'orange', 'yellow', 'green', 'blue', 'purple', 'white')
 names(fill_cols) <- 1:8
 
 generic_cards %>%
-#  filter(rank_orig <= 1, suit <= 1 ) %>%
+  #filter(rank <= 1, suit <= 1 ) %>%
   mutate(text_col = factor(if_else(fill_cols[suit] %in% c('black', 'red', 'blue', 'purple'), 0, 1))) %>%
     ggplot(aes(x = x, y = y)) +
     geom_rect(xmin = 0, xmax = 1, ymin = 0, ymax = 1, color = 'grey', aes(fill = factor(suit))) +
     geom_text(aes(label = text, size = text_size, hjust = just, colour = text_col)) +
-    facet_grid(rank_orig ~ suit) +
+    facet_grid(rank ~ suit) +
     guides(size = F, colour = F, fill = F) +
-    scale_size_area(max_size = 15) +
+    scale_size_area(max_size = 20) +
     scale_colour_manual(values = c('0' = 'white', '1' = 'black')) +
     scale_fill_manual(values = fill_cols) +
     scale_x_continuous(limits = c(0,1), expand = c(0,0)) +
@@ -145,5 +143,5 @@ generic_cards %>%
     theme_void() +
     theme(strip.background = element_blank(), strip.text = element_blank(), panel.spacing = unit(0, 'cm'))
  
-ggsave('test_card.png', width = 8*1.03, height = 11*1.6, units = 'in', dpi = 100)
+ggsave('test_card.png', width = 7*1.03, height = 13*1.6, units = 'in', dpi = 100)
 
