@@ -203,6 +203,39 @@ plot_template <- function(plot){
           panel.spacing = unit(0.1, 'mm'))
 }
 
+
+#trying other way
+make_plot <- function(df, template){
+  
+  plot <- df %>%
+    mutate(text_col = factor(if_else(fill_cols[suit] %in% c('black', 'red', 'blue', 'purple'), 0, 1))) %>%
+    ggplot() +
+    guides(size = F, colour = F, fill = F) +
+    scale_x_continuous(limits = c(0,1), expand = c(0,0)) +
+    scale_y_continuous(limits = c(0,1), expand = c(0,0)) +
+    theme_void() +
+    theme(strip.background = element_blank(), 
+          strip.text = element_blank(), 
+          panel.spacing = unit(0.1, 'mm'))
+  
+  template(plot)
+  
+}
+
+yokai_template <- function(plot){
+  
+  plot + geom_rect(xmin = 0, xmax = 1, ymin = 0, ymax = 1, aes(fill = factor(suit))) +
+    geom_text(x = 0.15, y = 0.9, hjust = 'center', size = 5, aes(label = rank, colour = text_col)) +
+    geom_text(x = 0.5, y = 0.5, hjust = 'center', size = 20, aes(label = rank, colour = text_col)) +
+    facet_grid(rank ~ suit) +
+    scale_colour_manual(values = c('0' = 'white', '1' = 'black')) +
+    scale_fill_manual(values = fill_cols)
+  
+}
+
+make_plot(yokai_card_list, yokai_template)
+
+
 # would like to do this *within* the data frame pipe
 texas_card_list$card_image <- texas_card_list %>%
   group_split(suit, rank) %>%
