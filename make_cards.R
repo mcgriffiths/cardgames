@@ -103,17 +103,23 @@ crew_token_list %>%
   write_csv('crew_tokens.csv')
 
 
-yokai_card_list <- expand_grid(rank = 1:7, suit = 1:7) %>% mutate(rank = rank + suit -1)
-
-texas_card_list <- expand_grid(rank = 1:11, suit = 1:8) %>% 
+yokai_card_list <- expand_grid(suit = 1:7, rank = 1:7) %>% 
+  mutate(rank = rank + suit - 1)
+ 
+texas_card_list <- 
+  expand_grid(rank = 1:11, suit = 1:8) %>% 
   filter(rank <= (12-suit)) %>%
-  mutate(rank_adj = ifelse(suit == 1, rank - 1, rank), 
-         rank_adj = 10*(suit-1)+rank) %>%
-  select(rank = rank_adj, suit, rank_orig = rank)
+  mutate(rank_display = ifelse(suit == 1, rank - 1, rank), 
+         rank_display = 10*(suit-1) + rank_display,
+         label = glue('{rank}_{suit}')) %>%
+  group_by(suit) %>%
+  mutate(max_rank = max(rank_display)) %>%
+  ungroup() %>%
+  arrange(suit, rank)
 
 texas_card_list %>%
-  transmute(label = glue('{rank}_{suit}'), 
-            image = glue('https://raw.githubusercontent.com/mcgriffiths/cardgames/master/texas/card_{rank}_{suit}.png')) %>%
+  transmute(label = glue('texas_{label}'), 
+            image = glue('https://raw.githubusercontent.com/mcgriffiths/cardgames/master/texas/{label}.png')) %>%
   write_csv('texas_cards.csv')
 
 #using facets to produce everything in one image
@@ -147,25 +153,77 @@ ggsave('test_card.png', width = 7*1.03, height = 13*1.6, units = 'in', dpi = 100
 
 #try without template, split geom_text
 
+make_texas_plot <- function(df){
 
+  df %>%
+    mutate(text_col = factor(if_else(fill_cols[suit] %in% c('black', 'red', 'blue', 'purple'), 0, 1))) %>%
+    ggplot() +
+    geom_rect(xmin = 0, xmax = 1, ymin = 0, ymax = 1, aes(fill = factor(suit))) +
+    geom_text(x = 0.15, y = 0.9, hjust = 'center', size = 5, aes(label = rank_display, colour = text_col)) +
+    geom_text(x = 0.5, y = 0.5, hjust = 'center', size = 20, aes(label = rank_display, colour = text_col)) +
+    geom_text(x = 0.15, y = 0.1, hjust = 'center', size = 3, aes(label = max_rank, colour = text_col)) +
+    facet_grid(rank ~ suit) +
+    guides(size = F, colour = F, fill = F) +
+    scale_colour_manual(values = c('0' = 'white', '1' = 'black')) +
+    scale_fill_manual(values = fill_cols) +
+    scale_x_continuous(limits = c(0,1), expand = c(0,0)) +
+    scale_y_continuous(limits = c(0,1), expand = c(0,0)) +
+    theme_void() +
+    theme(strip.background = element_blank(), 
+          strip.text = element_blank(), 
+          panel.spacing = unit(0.1, 'mm'))
+    
+}
+
+make_yokai_plot <- function(df){
+  
+  df %>%
+    mutate(text_col = factor(if_else(fill_cols[suit] %in% c('black', 'red', 'blue', 'purple'), 0, 1))) %>%
+    ggplot() +
+    geom_rect(xmin = 0, xmax = 1, ymin = 0, ymax = 1, aes(fill = factor(suit))) +
+    geom_text(x = 0.15, y = 0.9, hjust = 'center', size = 5, aes(label = rank, colour = text_col)) +
+    geom_text(x = 0.5, y = 0.5, hjust = 'center', size = 20, aes(label = rank, colour = text_col)) +
+    facet_grid(rank ~ suit) +
+    guides(size = F, colour = F, fill = F) +
+    scale_colour_manual(values = c('0' = 'white', '1' = 'black')) +
+    scale_fill_manual(values = fill_cols) +
+    scale_x_continuous(limits = c(0,1), expand = c(0,0)) +
+    scale_y_continuous(limits = c(0,1), expand = c(0,0)) +
+    theme_void() +
+    theme(strip.background = element_blank(), 
+          strip.text = element_blank(), 
+          panel.spacing = unit(0.1, 'mm'))
+  
+}
+
+# would like to do this *within* the data frame pipe
+texas_card_list$card_image <- texas_card_list %>%
+  group_split(suit, rank) %>%
+  map(make_texas_plot) 
+
+
+yokai_card_list$card_image <- yokai_card_list %>%
+  group_split(suit, rank) %>%
+  map(make_yokai_plot) 
+
+# saving options
+save_plot <- function(label, card_image, dir, file_type, w = 1.03, h = 1.6, u = 'in', dpi = 100, ...){
+  ggsave(glue('{dir}/{dir}_{label}.{file_type}'), card_image, width = w, height = h, units = u, dpi = dpi)
+}
+
+# save
+texas_card_list %>%
+  pwalk(save_plot, dir = 'test2', file_type = 'png')
 
 yokai_card_list %>%
-#  filter(rank == 10, suit == 3 ) %>%
-  mutate(text_col = factor(if_else(fill_cols[suit] %in% c('black', 'red', 'blue', 'purple'), 0, 1))) %>%
-  ggplot() +
-  geom_rect(xmin = 0, xmax = 1, ymin = 0, ymax = 1, aes(fill = factor(suit))) +
-  geom_text(x = 0.15, y = 0.9, hjust = 'center', size = 5, aes(label = rank, colour = text_col)) +
-  geom_text(x = 0.5, y = 0.5, hjust = 'center', size = 20, aes(label = rank, colour = text_col)) +
-  facet_grid(rank ~ suit) +
-  guides(size = F, colour = F, fill = F) +
-  scale_colour_manual(values = c('0' = 'white', '1' = 'black')) +
-  scale_fill_manual(values = fill_cols) +
-  scale_x_continuous(limits = c(0,1), expand = c(0,0)) +
-  scale_y_continuous(limits = c(0,1), expand = c(0,0)) +
-  theme_void() +
-  theme(strip.background = element_blank(), 
-        strip.text = element_blank(), 
-        panel.spacing = unit(0.1, 'mm'))
+  mutate(label = paste(rank, suit, sep = '_')) %>%
+  pwalk(save_plot, dir = 'yokai', file_type = 'png')
 
+yokai_card_list %>%
+  transmute(label = glue('yokai_{rank}_{suit}'), 
+            image = glue('https://raw.githubusercontent.com/mcgriffiths/cardgames/master/yokai/{label}.png')) %>%
+  write_csv('yokai/yokai_cards.csv')
+  
+deck_preview <- make_yokai_plot(yokai_card_list)
 
-ggsave('test_yokai.png', width = 7*1.03, height = 13*1.6, units = 'in', dpi = 100)
+ggsave('yokai/yokai_deck.png', deck_preview, width = 7*1.03, height = 13*1.6, units = 'in', dpi = 100)
