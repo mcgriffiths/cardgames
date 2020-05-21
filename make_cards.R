@@ -177,23 +177,30 @@ make_texas_plot <- function(df){
 
 make_yokai_plot <- function(df){
   
-  df %>%
+  card <- df %>%
     mutate(text_col = factor(if_else(fill_cols[suit] %in% c('black', 'red', 'blue', 'purple'), 0, 1))) %>%
     ggplot() +
     geom_rect(xmin = 0, xmax = 1, ymin = 0, ymax = 1, aes(fill = factor(suit))) +
     geom_text(x = 0.15, y = 0.9, hjust = 'center', size = 5, aes(label = rank, colour = text_col)) +
     geom_text(x = 0.5, y = 0.5, hjust = 'center', size = 20, aes(label = rank, colour = text_col)) +
     facet_grid(rank ~ suit) +
-    guides(size = F, colour = F, fill = F) +
     scale_colour_manual(values = c('0' = 'white', '1' = 'black')) +
-    scale_fill_manual(values = fill_cols) +
+    scale_fill_manual(values = fill_cols)
+  
+  plot_template(card)
+
+}
+
+
+plot_template <- function(plot){
+  plot +  
+    guides(size = F, colour = F, fill = F) +
     scale_x_continuous(limits = c(0,1), expand = c(0,0)) +
     scale_y_continuous(limits = c(0,1), expand = c(0,0)) +
     theme_void() +
     theme(strip.background = element_blank(), 
           strip.text = element_blank(), 
           panel.spacing = unit(0.1, 'mm'))
-  
 }
 
 # would like to do this *within* the data frame pipe
@@ -208,7 +215,7 @@ yokai_card_list$card_image <- yokai_card_list %>%
 
 # saving options
 save_plot <- function(label, card_image, dir, file_type, w = 1.03, h = 1.6, u = 'in', dpi = 100, ...){
-  ggsave(glue('{dir}/{dir}_{label}.{file_type}'), card_image, width = w, height = h, units = u, dpi = dpi)
+  ggsave(glue('{dir}/{label}.{file_type}'), card_image, width = w, height = h, units = u, dpi = dpi)
 }
 
 # save
@@ -216,9 +223,9 @@ texas_card_list %>%
   pwalk(save_plot, dir = 'test2', file_type = 'png')
 
 yokai_card_list %>%
-  mutate(label = paste(rank, suit, sep = '_')) %>%
-  pwalk(save_plot, dir = 'yokai', file_type = 'png') %>%
-  mutate(image = glue('https://raw.githubusercontent.com/mcgriffiths/cardgames/master/yokai/{label}.png')) %>%
+  mutate(label = paste('yokai', rank, suit, sep = '_')) %>%
+  pwalk(save_plot, dir = 'yokai', file_type = 'svg') %>%
+  mutate(image = glue('https://raw.githubusercontent.com/mcgriffiths/cardgames/master/yokai/{label}.svg')) %>%
   select(label, image) %>%
   write_csv('yokai/yokai_cards.csv')
 
