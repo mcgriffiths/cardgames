@@ -217,13 +217,11 @@ texas_card_list %>%
 
 yokai_card_list %>%
   mutate(label = paste(rank, suit, sep = '_')) %>%
-  pwalk(save_plot, dir = 'yokai', file_type = 'png')
-
-yokai_card_list %>%
-  transmute(label = glue('yokai_{rank}_{suit}'), 
-            image = glue('https://raw.githubusercontent.com/mcgriffiths/cardgames/master/yokai/{label}.png')) %>%
+  pwalk(save_plot, dir = 'yokai', file_type = 'png') %>%
+  mutate(image = glue('https://raw.githubusercontent.com/mcgriffiths/cardgames/master/yokai/{label}.png')) %>%
+  select(label, image) %>%
   write_csv('yokai/yokai_cards.csv')
-  
+
 deck_preview <- make_yokai_plot(yokai_card_list)
 
 ggsave('yokai/yokai_deck.png', deck_preview, width = 7*1.03, height = 13*1.6, units = 'in', dpi = 100)
