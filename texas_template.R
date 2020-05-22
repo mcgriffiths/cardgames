@@ -26,3 +26,11 @@ make_card <- function(df){
     theme_card
   
 }
+
+# palettes for mapping suits into colours
+fill_cols <- c('black', 'red', 'orange', 'yellow', 'green', 'blue', 'purple', 'white') %>%
+  set_names(1:8)
+
+text_cols <- c('white', 'white', 'black', 'black', 'black', 'white', 'white', 'black') %>%
+  set_names(1:8)
+
