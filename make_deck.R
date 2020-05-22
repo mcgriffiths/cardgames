@@ -12,10 +12,9 @@ game <- 'texas'
 source(paste(game, 'template.R', sep = '_'))
 
 # make the card images
-# would ideally like to do this *within* the data frame pipe
-# might not always be suit, rank - better to just do rowwise?
 card_list$card_image <- card_list %>%
-  group_split(suit, rank) %>%
+  rowwise() %>%
+  group_split() %>%
   map(make_card) 
 
 # save all cards and generate csv
