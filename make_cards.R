@@ -210,8 +210,8 @@ save_plot <- function(label, card_image, dir, file_type, w = 1.04, h = 1.6, u = 
 
 # save
 yokai_card_list %>%
-  mutate(label = paste('yokai', suit, rank, sep = "_")) %>%
-  pwalk(save_plot, dir = 'test', file_type = 'png')
+  mutate(label = paste('yokai', rank, suit, sep = "_")) %>%
+  pwalk(save_plot, dir = 'yokai', file_type = 'svg')
 
 yokai_card_list %>%
   mutate(label = paste('yokai', rank, suit, sep = '_')) %>%
@@ -222,4 +222,4 @@ yokai_card_list %>%
 
 deck_preview <- make_yokai_plot(yokai_card_list)
 
-ggsave('test/yokai_deck.png', deck_preview, width = 7*1.03, height = 13*1.6, units = 'in', dpi = 100)
+ggsave('test2/yokai_deck_new.svg', deck_preview, width = 7*1.03, height = 13*1.6, units = 'in', dpi = 100)
