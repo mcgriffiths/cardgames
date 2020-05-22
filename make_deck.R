@@ -8,7 +8,7 @@ library(readr)
 
 source('theme_card.R')
 
-game <- 'texas'
+game <- 'voodoo'
 source(paste(game, 'template.R', sep = '_'))
 
 # make the card images
