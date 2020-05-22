@@ -6,21 +6,21 @@ library(glue)
 library(tidyr)
 library(readr)
 
-game <- 'yokai'
+game <- 'texas'
 
 # generate card list from raw structure + derived values
 yokai_card_list <- expand_grid(suit = 1:7, rank = 1:7) %>% 
   mutate(rank = rank + suit - 1) %>%
-  mutate(label = paste(game, rank, letters[suit], sep = '_'))
+  mutate(label = glue('{game}_{rank}_{letters[suit]}'))
  
 texas_card_list <- expand_grid(suit = 1:8, rank = 1:11) %>% 
   filter(rank <= (12-suit)) %>%
   mutate(rank_display = ifelse(suit == 1, rank - 1, rank), 
-         rank_display = 10*(suit-1) + rank_display,
-         label = glue('{rank_display}_{letters[suit]}')) %>%
+         rank_display = 10*(suit-1) + rank_display) %>%
   group_by(suit) %>%
   mutate(max_rank = max(rank_display)) %>%
-  ungroup()
+  ungroup() %>%
+  mutate(label = glue('{game}_{rank_display}_{letters[suit]}'))
 
 generic_card_list <- expand_grid(suit = 1:8, rank = 1:20) #what needs to be done about character vs int vs factor?
 
@@ -88,13 +88,14 @@ save_plot <- function(card_image, dir, label, file_type = 'svg', w = 1.03, h = 1
 }
 
 # save all cards and generate csv
-yokai_card_list %>%
+texas_card_list %>%
   pwalk(save_plot, dir = game) %>%
-  mutate(image = glue('https://raw.githubusercontent.com/mcgriffiths/cardgames/master/yokai/{label}.svg')) %>%
+  mutate(image = glue('https://raw.githubusercontent.com/mcgriffiths/cardgames/master/{game}/{label}.svg')) %>%
   select(label, image) %>%
   write_csv(glue('{game}/{game}_cards.csv'))
+
   
 # generate and save deck
-deck <- make_yokai_plot(yokai_card_list)
+deck <- make_texas_card(texas_card_list)
 save_plot(deck, dir = game, label = paste(game, 'deck', sep = '_'), w = 7*1.03, h = 13*1.6)
 
