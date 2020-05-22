@@ -204,17 +204,13 @@ yokai_card_list$card_image <- yokai_card_list %>%
   map(make_yokai_plot) 
 
 # saving options
-save_plot <- function(label, card_image, dir, file_type, w = 1.04, h = 1.6, u = 'in', dpi = 100, ...){
+save_plot <- function(label, card_image, dir, file_type, w = 1.03, h = 1.6, u = 'in', dpi = 100, ...){
   ggsave(glue('{dir}/{label}.{file_type}'), card_image, width = w, height = h, units = u, dpi = dpi)
 }
 
 # save
 yokai_card_list %>%
-  mutate(label = paste('yokai', rank, suit, sep = "_")) %>%
-  pwalk(save_plot, dir = 'yokai', file_type = 'svg')
-
-yokai_card_list %>%
-  mutate(label = paste('yokai', rank, suit, sep = '_')) %>%
+  mutate(label = paste('yokai', rank, letters[suit], sep = '_')) %>%
   pwalk(save_plot, dir = 'yokai', file_type = 'svg') %>%
   mutate(image = glue('https://raw.githubusercontent.com/mcgriffiths/cardgames/master/yokai/{label}.svg')) %>%
   select(label, image) %>%
@@ -222,4 +218,4 @@ yokai_card_list %>%
 
 deck_preview <- make_yokai_plot(yokai_card_list)
 
-ggsave('test2/yokai_deck_new.svg', deck_preview, width = 7*1.03, height = 13*1.6, units = 'in', dpi = 100)
+ggsave('yokai/yokai_deck.svg', deck_preview, width = 7*1.03, height = 13*1.6, units = 'in', dpi = 100)
